@@ -1,8 +1,16 @@
 services:
   - type: web
     name: eduscan
-    env: python
+    runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
-
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.11"
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: MODEL
+        value: qwen/qwen-2.5-vl-72b-instruct
+      - key: FLASK_SECRET
+        generateValue: true

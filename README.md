@@ -61,7 +61,7 @@ EduScan/
 
 ### Prerequisites
 
-- **Python 3.10** or newer
+- **Python 3.11** (required on Render; PaddlePaddle has no Python 3.14 wheels)
 - **pip** (Python package manager)
 - *(Optional)* An [OpenRouter](https://openrouter.ai/) API key for cloud-based OCR
 

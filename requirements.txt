@@ -1,9 +1,12 @@
+# Python 3.11 on Render (not 3.14). PaddleOCR 2.8.1 cannot install with numpy 2.0.
+# app.py uses the PaddleOCR 3.x API (device=, predict(), PP-OCRv6_small_*).
 Flask==3.0.3
-gunicorn==22.0.0
-opencv-python==4.10.0.84
-numpy==2.0.0
-paddleocr==2.8.1
-reportlab==4.2.2
-openai==1.44.1
-python-dotenv==1.0.1
 Werkzeug==3.0.3
+gunicorn==22.0.0
+opencv-python-headless==4.10.0.84
+numpy>=1.26.4,<2.3
+paddlepaddle==3.2.0
+paddleocr==3.7.0
+reportlab==4.2.2
+openai>=1.44.1,<2
+python-dotenv==1.0.1

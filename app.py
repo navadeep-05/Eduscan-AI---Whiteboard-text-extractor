@@ -31,7 +31,6 @@ from flask import (
     flash,
 )
 from werkzeug.utils import secure_filename
-from paddleocr import PaddleOCR
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
@@ -65,24 +64,40 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 
 
 # --------------------------------------------------
-# 2. Initialize PaddleOCR Small — local cached model
+# 2. PaddleOCR Small — load on first local-OCR fallback
 # --------------------------------------------------
 
 _MODEL_DIR = BASE_DIR / "models"
 _DET_MODEL_DIR = _MODEL_DIR / "PP-OCRv6_small_det"
 _REC_MODEL_DIR = _MODEL_DIR / "PP-OCRv6_small_rec"
+_paddle_ocr = None
 
-# Initialize once with local directory caching to prevent re-downloads
-ocr = PaddleOCR(
-    device="cpu",
-    text_detection_model_name="PP-OCRv6_small_det",
-    text_detection_model_dir=str(_DET_MODEL_DIR),
-    text_recognition_model_name="PP-OCRv6_small_rec",
-    text_recognition_model_dir=str(_REC_MODEL_DIR),
-    use_doc_orientation_classify=False,
-    use_doc_unwarping=False,
-    use_textline_orientation=False,
-)
+
+def get_paddle_ocr():
+    """Create the local OCR engine once, after the web process has started."""
+    global _paddle_ocr
+
+    if _paddle_ocr is not None:
+        return _paddle_ocr
+
+    from paddleocr import PaddleOCR
+
+    ocr_kwargs = {
+        "device": "cpu",
+        "text_detection_model_name": "PP-OCRv6_small_det",
+        "text_recognition_model_name": "PP-OCRv6_small_rec",
+        "use_doc_orientation_classify": False,
+        "use_doc_unwarping": False,
+        "use_textline_orientation": False,
+    }
+
+    if _DET_MODEL_DIR.exists():
+        ocr_kwargs["text_detection_model_dir"] = str(_DET_MODEL_DIR)
+    if _REC_MODEL_DIR.exists():
+        ocr_kwargs["text_recognition_model_dir"] = str(_REC_MODEL_DIR)
+
+    _paddle_ocr = PaddleOCR(**ocr_kwargs)
+    return _paddle_ocr
 
 
 # --------------------------------------------------
@@ -131,7 +146,7 @@ def extract_text(image_path):
     PaddleOCR 3.x returns prediction results containing
     recognized text in the 'rec_texts' field.
     """
-    results = ocr.predict(input=str(image_path))
+    results = get_paddle_ocr().predict(input=str(image_path))
 
     extracted_lines = []
 
