@@ -9,6 +9,8 @@
     <meta name="description"
         content="Upload a whiteboard photo. EduScan AI automatically corrects perspective, enhances the image and extracts editable text using AI — all in seconds.">
 
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+
     <!-- Load our custom stylesheet through Flask -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
@@ -618,6 +620,26 @@
             font-weight: 600;
             color: var(--primary);
         }
+
+        .built-by-sparkle {
+            display: inline-block;
+            transform-origin: center;
+            animation: footer-sparkle 2.4s ease-in-out infinite;
+        }
+
+        @keyframes footer-sparkle {
+
+            0%,
+            100% {
+                opacity: 0.75;
+                transform: scale(1) rotate(0deg);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.2) rotate(12deg);
+            }
+        }
     </style>
 </head>
 
@@ -681,8 +703,7 @@
 
         <div class="header-right">
             <span class="status-dot"></span>
-            <span class="header-status">AI workspace</span>
-            <span class="version-badge">BETA</span>
+            <span class="header-status">WHITEBOARD OCR</span>
         </div>
 
     </header>
@@ -1098,8 +1119,12 @@
 
         <!-- ================= FOOTER ================= -->
         <footer class="footer">
-            <a href="{{ url_for('index') }}" class="footer-brand brand-text-animated">EduScan AI</a>
-            <span class="built-by-pill">✦ Built by Navadeep J</span>
+            <a href="{{ url_for('index') }}" class="footer-brand brand-text-animated">
+                <span class="brand-icon">E</span>
+                <span>EduScan AI</span>
+            </a>
+            <span class="built-by-pill"><span class="built-by-sparkle" aria-hidden="true">✦</span> Built by Navadeep
+                J</span>
             <span>AI-assisted transcription &middot; Always review the output</span>
         </footer>
 

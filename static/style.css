@@ -21,10 +21,36 @@
 
 body {
     margin: 0;
-    background: var(--background);
+    min-height: 100vh;
+    background: linear-gradient(125deg, #f6f8fc, #eef1ff, #f1f8ff, #f7f5ff, #f6f8fc);
+    background-size: 300% 300%;
     color: var(--text);
     font-family: "DM Sans", sans-serif;
     -webkit-font-smoothing: antialiased;
+    animation: page-background-shift 24s ease-in-out infinite;
+}
+
+@keyframes page-background-shift {
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body {
+        animation: none;
+        background-position: 50% 50%;
+    }
+
+    .built-by-sparkle {
+        animation: none;
+    }
 }
 
 button,
@@ -83,6 +109,7 @@ input:focus-visible {
     height: 38px;
     border-radius: 12px;
     color: white;
+    -webkit-text-fill-color: white;
     background: linear-gradient(135deg, #7378ff, #494bd5);
     box-shadow: 0 5px 12px rgba(83, 89, 232, 0.22);
 }
@@ -96,7 +123,12 @@ input:focus-visible {
     align-items: center;
     gap: 9px;
     color: var(--muted);
-    font-size: 13px;
+}
+
+.header-status {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
 }
 
 .status-dot {
@@ -761,10 +793,21 @@ input:focus-visible {
 }
 
 .footer-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
     color: #4c55d9;
     font-family: "Manrope", sans-serif;
     font-size: 13px;
     font-weight: 800;
+}
+
+.footer-brand .brand-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    box-shadow: none;
+    animation: none;
 }
 
 
