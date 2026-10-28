@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    .flow-arrow {
+      stroke: var(--muted-foreground);
+      stroke-width: 2.5;
+      fill: none;
+      marker-end: url(#arrowhead);
+    }
+    .flow-arrow-alt {
+      stroke: var(--muted-foreground);
+      stroke-width: 2;
+      stroke-dasharray: 6 3;
+      fill: none;
+      marker-end: url(#arrowhead);
+    }
+    .stage-block {
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stage-block:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-6">
+
+  <!-- SVG Arrow Marker Definition -->
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="var(--muted-foreground)" />
+      </marker>
+    </defs>
+  </svg>
+
+  <!-- Title -->
+  <div class="text-center mb-8">
+    <h1 class="text-3xl font-bold text-[var(--foreground)]">📸 EduScan — System Architecture</h1>
+    <p class="text-[var(--muted-foreground)] text-base mt-1">AI-Powered Classroom Board Text Extractor</p>
+  </div>
+
+  <!-- Main Architecture Flow -->
+  <div class="max-w-6xl mx-auto relative">
+
+    <!-- ROW 1: Upload → Board Detection -->
+    <div class="flex items-start justify-center gap-6 mb-4">
+
+      <!-- Stage 1: Upload -->
+      <div class="stage-block bg-[#3B82F6] text-white rounded-2xl p-5 w-56 shadow-lg text-center flex-shrink-0">
+        <div class="text-3xl mb-2">📤</div>
+        <h3 class="font-bold text-lg">Image Upload</h3>
+        <p class="text-blue-100 text-sm mt-1">User uploads a whiteboard photo</p>
+        <div class="mt-3 bg-blue-700/40 rounded-lg px-3 py-1 text-xs font-mono">Flask + HTML/CSS/JS</div>
+        <div class="text-blue-200 text-xs mt-2">PNG · JPG · WEBP · ≤15 MB</div>
+      </div>
+
+      <!-- Arrow -->
+      <div class="flex items-center self-center">
+        <svg width="60" height="30"><line x1="0" y1="15" x2="50" y2="15" class="flow-arrow"/></svg>
+      </div>
+
+      <!-- Stage 2: Board Detection -->
+      <div class="stage-block bg-[#10B981] text-white rounded-2xl p-5 w-64 shadow-lg text-center flex-shrink-0">
+        <div class="text-3xl mb-2">🔲</div>
+        <h3 class="font-bold text-lg">Board Detection</h3>
+        <p class="text-emerald-100 text-sm mt-1">Auto-detect whiteboard edges</p>
+        <div class="mt-3 bg-emerald-700/40 rounded-lg px-3 py-1 text-xs font-mono">OpenCV · Canny + Contours</div>
+        <div class="flex justify-center gap-3 mt-3">
+          <span class="bg-emerald-700/60 rounded-full px-3 py-1 text-xs">✅ Found</span>
+          <span class="bg-red-500/60 rounded-full px-3 py-1 text-xs">❌ Not Found</span>
+        </div>
+      </div>
+
+      <!-- Arrow -->
+      <div class="flex items-center self-center">
+        <svg width="60" height="30"><line x1="0" y1="15" x2="50" y2="15" class="flow-arrow"/></svg>
+      </div>
+
+      <!-- Stage 2B: Manual Corner Selection -->
+      <div class="stage-block bg-[#F59E0B] text-white rounded-2xl p-5 w-56 shadow-lg text-center flex-shrink-0">
+        <div class="text-3xl mb-2">✋</div>
+        <h3 class="font-bold text-lg">Manual Corners</h3>
+        <p class="text-amber-100 text-sm mt-1">User clicks 4 corners on the image</p>
+        <div class="mt-3 bg-amber-700/40 rounded-lg px-3 py-1 text-xs font-mono">JavaScript · perspective.js</div>
+        <div class="text-amber-200 text-xs mt-2">Fallback when auto fails</div>
+      </div>
+    </div>
+
+    <!-- Connector arrow down from row 1 to row 2 -->
+    <div class="flex justify-center mb-4">
+      <svg width="30" height="50"><line x1="15" y1="0" x2="15" y2="40" class="flow-arrow"/></svg>
+    </div>
+
+    <!-- ROW 2: Perspective Correction → Enhancement → OCR -->
+    <div class="flex items-start justify-center gap-6 mb-4">
+
+      <!-- Stage 3: Perspective Correction -->
+      <div class="stage-block bg-[#10B981] text-white rounded-2xl p-5 w-60 shadow-lg text-center flex-shrink-0">
+        <div class="text-3xl mb-2">📐</div>
+        <h3 class="font-bold text-lg">Perspective Correction</h3>
+        <p class="text-emerald-100 text-sm mt-1">Flatten the tilted board into a clean rectangle</p>
+        <div class="mt-3 bg-emerald-700/40 rounded-lg px-3 py-1 text-xs font-mono">cv2.getPerspectiveTransform</div>
+        <div class="mt-1 bg-emerald-700/40 rounded-lg px-3 py-1 text-xs font-mono">cv2.warpPerspective</div>
+      </div>
+
+      <!-- Arrow -->
+      <div class="flex items-center self-center">
+        <svg width="60" height="30"><line x1="0" y1="15" x2="50" y2="15" class="flow-arrow"/></svg>
+      </div>
+
+      <!-- Stage 4: Enhancement -->
+      <div class="stage-block bg-[#10B981] text-white rounded-2xl p-5 w-56 shadow-lg text-center flex-shrink-0">
+        <div class="text-3xl mb-2">🖼️</div>
+        <h3 class="font-bold text-lg">Image Enhancement</h3>
+        <p class="text-emerald-100 text-sm mt-1">Clean, readable grayscale output</p>
+        <div class="mt-3 bg-emerald-700/40 rounded-lg px-3 py-1 text-xs font-mono">OpenCV CLAHE</div>
+        <div class="text-emerald-200 text-xs mt-2">⬇ Enhanced image download</div>
+      </div>
+
+      <!-- Arrow -->
+      <div class="flex items-center self-center">
+        <svg width="60" height="30"><line x1="0" y1="15" x2="50" y2="15" class="flow-arrow"/></svg>
+      </div>
+
+      <!-- Stage 5: OCR -->
+      <div class="stage-block bg-[#8B5CF6] text-white rounded-2xl p-5 w-72 shadow-lg text-center flex-shrink-0">
+        <div class="text-3xl mb-2">🔍</div>
+        <h3 class="font-bold text-lg">OCR Text Extraction</h3>
+        <p class="text-purple-100 text-sm mt-1">Extract handwritten & printed text</p>
+
+        <div class="flex gap-2 mt-3">
+          <!-- Primary -->
+          <div class="flex-1 bg-purple-700/50 rounded-xl p-3">
+            <div class="text-xs font-bold text-purple-200 mb-1">☁️ PRIMARY</div>
+            <div class="font-semibold text-sm">Qwen 2.5 VL</div>
+            <div class="text-purple-200 text-xs mt-1">72B Vision-Language</div>
+            <div class="bg-purple-800/50 rounded-lg px-2 py-1 text-xs font-mono mt-2">OpenRouter API</div>
+          </div>
+          <!-- Fallback -->
+          <div class="flex-1 bg-purple-700/50 rounded-xl p-3">
+            <div class="text-xs font-bold text-purple-200 mb-1">🔄 FALLBACK</div>
+            <div class="font-semibold text-sm">PaddleOCR v6</div>
+            <div class="text-purple-200 text-xs mt-1">Local · Offline · CPU</div>
+            <div class="bg-purple-800/50 rounded-lg px-2 py-1 text-xs font-mono mt-2">PaddleOCR Small</div>
+          </div>
+        </div>
+        <div class="text-purple-300 text-xs mt-2 italic">Falls back to local if API key missing or error</div>
+      </div>
+    </div>
+
+    <!-- Connector arrow down from row 2 to row 3 -->
+    <div class="flex justify-center mb-4">
+      <svg width="30" height="50"><line x1="15" y1="0" x2="15" y2="40" class="flow-arrow"/></svg>
+    </div>
+
+    <!-- ROW 3: Edit → Export -->
+    <div class="flex items-start justify-center gap-6 mb-6">
+
+      <!-- Stage 6: Edit -->
+      <div class="stage-block bg-[#3B82F6] text-white rounded-2xl p-5 w-60 shadow-lg text-center flex-shrink-0">
+        <div class="text-3xl mb-2">✏️</div>
+        <h3 class="font-bold text-lg">Edit Transcription</h3>
+        <p class="text-blue-100 text-sm mt-1">Review and correct extracted text in-browser</p>
+        <div class="mt-3 bg-blue-700/40 rounded-lg px-3 py-1 text-xs font-mono">Editable Textarea</div>
+      </div>
+
+      <!-- Arrow -->
+      <div class="flex items-center self-center">
+        <svg width="60" height="30"><line x1="0" y1="15" x2="50" y2="15" class="flow-arrow"/></svg>
+      </div>
+
+      <!-- Export TXT -->
+      <div class="stage-block bg-[#F59E0B] text-white rounded-2xl p-5 w-48 shadow-lg text-center flex-shrink-0">
+        <div class="text-3xl mb-2">📄</div>
+        <h3 class="font-bold text-base">Export TXT</h3>
+        <p class="text-amber-100 text-sm mt-1">Plain text download</p>
+        <div class="mt-3 bg-amber-700/40 rounded-lg px-3 py-1 text-xs font-mono">Python I/O</div>
+      </div>
+
+      <!-- Export PDF -->
+      <div class="stage-block bg-[#F59E0B] text-white rounded-2xl p-5 w-48 shadow-lg text-center flex-shrink-0">
+        <div class="text-3xl mb-2">📕</div>
+        <h3 class="font-bold text-base">Export PDF</h3>
+        <p class="text-amber-100 text-sm mt-1">Formatted PDF download</p>
+        <div class="mt-3 bg-amber-700/40 rounded-lg px-3 py-1 text-xs font-mono">ReportLab</div>
+      </div>
+    </div>
+
+    <!-- Tech Stack Legend -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm">
+      <h3 class="text-[var(--foreground)] font-bold text-base mb-3 text-center">🛠️ Tech Stack</h3>
+      <div class="flex flex-wrap justify-center gap-3">
+        <span class="bg-[#3B82F6] text-white rounded-full px-4 py-1.5 text-sm font-medium shadow">🐍 Python 3.10+</span>
+        <span class="bg-[#3B82F6] text-white rounded-full px-4 py-1.5 text-sm font-medium shadow">🌐 Flask</span>
+        <span class="bg-[#10B981] text-white rounded-full px-4 py-1.5 text-sm font-medium shadow">👁️ OpenCV</span>
+        <span class="bg-[#8B5CF6] text-white rounded-full px-4 py-1.5 text-sm font-medium shadow">📝 PaddleOCR v6</span>
+        <span class="bg-[#8B5CF6] text-white rounded-full px-4 py-1.5 text-sm font-medium shadow">🤖 OpenRouter API</span>
+        <span class="bg-[#F59E0B] text-white rounded-full px-4 py-1.5 text-sm font-medium shadow">📕 ReportLab</span>
+        <span class="bg-[#6366F1] text-white rounded-full px-4 py-1.5 text-sm font-medium shadow">🔢 NumPy</span>
+      </div>
+
+      <!-- Color Legend -->
+      <div class="flex justify-center gap-6 mt-4 text-sm text-[var(--muted-foreground)]">
+        <div class="flex items-center gap-2"><div class="w-4 h-4 rounded bg-[#3B82F6]"></div> Input / Output</div>
+        <div class="flex items-center gap-2"><div class="w-4 h-4 rounded bg-[#10B981]"></div> Computer Vision</div>
+        <div class="flex items-center gap-2"><div class="w-4 h-4 rounded bg-[#8B5CF6]"></div> OCR Engine</div>
+        <div class="flex items-center gap-2"><div class="w-4 h-4 rounded bg-[#F59E0B]"></div> Export / Fallback</div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

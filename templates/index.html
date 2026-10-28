@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>EduScan AI | Whiteboard Text Extractor</title>
+    <meta name="description"
+        content="Upload a whiteboard photo. EduScan AI automatically corrects perspective, enhances the image and extracts editable text using AI — all in seconds.">
+
+    <!-- Load our custom stylesheet through Flask -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Modern typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* == Auto-perspective banner ====================================== */
+        .auto-banner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 22px;
+        }
+
+        .auto-banner.success {
+            background: #f0fbf6;
+            border: 1px solid #b6e9d4;
+            color: #157252;
+        }
+
+        .auto-banner.info {
+            background: #f4f4ff;
+            border: 1px solid #dde0ff;
+            color: #4147d2;
+        }
+
+        .auto-banner-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        /* == Side-by-side comparison grid ================================ */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            align-items: start;
+        }
+
+        @media (max-width: 680px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .comp-card {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .comp-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comp-card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .comp-num {
+            display: grid;
+            place-items: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: var(--primary-soft);
+            color: var(--primary);
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .comp-title {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .comp-badge {
+            padding: 4px 9px;
+            border-radius: 6px;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+        }
+
+        .badge-source {
+            background: #f0f2f7;
+            color: #5a6278;
+        }
+
+        .badge-enhanced {
+            background: #eafaf3;
+            color: #0e7052;
+        }
+
+        .badge-auto {
+            background: #f0f1ff;
+            color: var(--primary);
+        }
+
+        .comp-image-wrap {
+            background: #f8f9fc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 220px;
+        }
+
+        .comp-image-wrap img {
+            width: 100%;
+            display: block;
+            object-fit: contain;
+            max-height: 420px;
+        }
+
+        .comp-footer {
+            padding: 10px 18px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .comp-footer-note {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .comp-download-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            border-radius: 7px;
+            background: var(--primary-soft);
+            color: var(--primary);
+            font-size: 11px;
+            font-weight: 700;
+            transition: background 0.15s;
+            text-decoration: none;
+        }
+
+        .comp-download-link:hover {
+            background: #e2e4ff;
+        }
+
+        .comp-view-link {
+            color: var(--muted);
+            font-size: 11px;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        /* == Manual perspective (centred collapsible) =================== */
+        .manual-persp-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 28px;
+        }
+
+        .manual-persp-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 740px;
+            padding: 14px 20px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: white;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.15s, border-color 0.15s;
+        }
+
+        .manual-persp-toggle:hover {
+            background: #f8f9ff;
+            border-color: #c5c8f8;
+        }
+
+        .manual-persp-toggle .toggle-arrow {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            transition: transform 0.25s;
+            color: var(--muted);
+        }
+
+        .manual-persp-toggle[aria-expanded="true"] .toggle-arrow {
+            transform: rotate(180deg);
+        }
+
+        .manual-persp-panel {
+            display: none;
+            width: 100%;
+            max-width: 740px;
+            padding: 22px;
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            background: #fafbff;
+        }
+
+        .manual-persp-panel.open {
+            display: block;
+        }
+
+        /* Perspective canvas */
+        #perspective-canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            cursor: crosshair;
+            margin: 14px 0;
+        }
+
+        #perspective-source {
+            display: none;
+        }
+
+        #perspective-status {
+            font-size: 12px;
+            color: var(--muted);
+            margin: 6px 0 14px;
+        }
+
+        .persp-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .persp-btn {
+            padding: 9px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .persp-btn:hover {
+            background: #f0f2f8;
+        }
+
+        .persp-btn.primary {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .persp-btn.primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .persp-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        /* == Download arrow icon button ================================== */
+        .export-arrow-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1.5px solid rgba(255, 255, 255, 0.35);
+            transition: background 0.18s, transform 0.18s;
+            flex-shrink: 0;
+        }
+
+        .export-arrow-btn:hover {
+            background: rgba(255, 255, 255, 0.32);
+            transform: translateY(2px);
+        }
+
+        .export-arrow-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+        }
+
+        /* == Processing overlay ========================================== */
+        #processing-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 28px;
+            background: rgba(10, 12, 26, 0.82);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        #processing-overlay.visible {
+            display: flex;
+            animation: overlay-fade-in 0.3s ease;
+        }
+
+        @keyframes overlay-fade-in {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Whiteboard scan card */
+        .proc-card {
+            position: relative;
+            width: min(92vw, 400px);
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            overflow: hidden;
+            padding: 38px 32px 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 22px;
+        }
+
+        /* Scanning beam that sweeps down the card */
+        .proc-scan-beam {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg,
+                    transparent 0%,
+                    rgba(100, 108, 255, 0.9) 40%,
+                    rgba(155, 100, 255, 0.9) 60%,
+                    transparent 100%);
+            box-shadow: 0 0 18px 4px rgba(100, 108, 255, 0.5);
+            animation: scan-sweep 1.8s ease-in-out infinite;
+        }
+
+        @keyframes scan-sweep {
+            0% {
+                top: 0%;
+                opacity: 0;
+            }
+
+            5% {
+                opacity: 1;
+            }
+
+            95% {
+                opacity: 1;
+            }
+
+            100% {
+                top: 100%;
+                opacity: 0;
+            }
+        }
+
+        /* Ring spinner */
+        .proc-spinner {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #7378ff;
+            border-right-color: #a78bfa;
+            animation: spin 0.9s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Step dots */
+        .proc-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .proc-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.38);
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        .proc-step.active {
+            color: rgba(255, 255, 255, 0.92);
+            transform: translateX(4px);
+        }
+
+        .proc-step.done {
+            color: rgba(100, 220, 160, 0.75);
+        }
+
+        .proc-step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            flex-shrink: 0;
+            transition: background 0.3s;
+        }
+
+        .proc-step.active .proc-step-dot {
+            background: #7378ff;
+            box-shadow: 0 0 8px 2px rgba(115, 120, 255, 0.7);
+            animation: pulse-dot 0.9s ease infinite;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.5);
+            }
+        }
+
+        .proc-label {
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+
+        .proc-title {
+            font-family: 'Manrope', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+            letter-spacing: -0.4px;
+        }
+
+        /* == Interactive Animations == */
+        /* 1. Blinking status dot */
+        .status-dot {
+            position: relative;
+            background: #10b981;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: status-pulse 1.8s infinite cubic-bezier(0.66, 0, 0, 1);
+        }
+
+        @keyframes status-pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+                opacity: 0.6;
+            }
+
+            50% {
+                transform: scale(1.15);
+                box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+                opacity: 0.6;
+            }
+        }
+
+        /* 2. Animated EduScan AI Brand */
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            transition: transform 0.25s ease;
+        }
+
+        .brand:hover {
+            transform: translateY(-1px) scale(1.02);
+        }
+
+        .brand-icon {
+            display: inline-grid;
+            place-items: center;
+            animation: brand-float 3.5s ease-in-out infinite;
+        }
+
+        @keyframes brand-float {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-3px) rotate(2deg);
+            }
+        }
+
+        .brand-text-animated {
+            background: linear-gradient(135deg, var(--text) 0%, var(--primary) 50%, #8b5cf6 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: brand-shimmer 4s linear infinite;
+        }
+
+        @keyframes brand-shimmer {
+            to {
+                background-position: 200% center;
+            }
+        }
+
+        /* 3. In-Motion Eyebrow Badge */
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            animation: eyebrow-float 2.8s ease-in-out infinite;
+            box-shadow: 0 2px 10px rgba(99, 102, 241, 0.12);
+        }
+
+        @keyframes eyebrow-float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+                box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+            }
+
+            50% {
+                transform: translateY(-3px);
+                box-shadow: 0 6px 14px rgba(99, 102, 241, 0.2);
+            }
+        }
+
+        .eyebrow-icon {
+            display: inline-block;
+            animation: star-spin 3s ease-in-out infinite;
+            color: #f59e0b;
+        }
+
+        @keyframes star-spin {
+            0% {
+                transform: rotate(0deg) scale(1);
+            }
+
+            50% {
+                transform: rotate(180deg) scale(1.25);
+            }
+
+            100% {
+                transform: rotate(360deg) scale(1);
+            }
+        }
+
+        /* Footer credits pill */
+        .built-by-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(99, 102, 241, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= PROCESSING OVERLAY ================= -->
+    <div id="processing-overlay" role="status" aria-live="polite" aria-label="Processing your image">
+        <div class="proc-card">
+            <div class="proc-scan-beam"></div>
+
+            <div class="proc-spinner"></div>
+
+            <div class="proc-title">Analysing your whiteboard…</div>
+
+            <div class="proc-steps">
+                <div class="proc-step active" id="proc-step-0">
+                    <span class="proc-step-dot"></span>
+                    <span>Saving &amp; validating image</span>
+                </div>
+                <div class="proc-step" id="proc-step-1">
+                    <span class="proc-step-dot"></span>
+                    <span>Auto-detecting board boundary</span>
+                </div>
+                <div class="proc-step" id="proc-step-2">
+                    <span class="proc-step-dot"></span>
+                    <span>Correcting perspective</span>
+                </div>
+                <div class="proc-step" id="proc-step-3">
+                    <span class="proc-step-dot"></span>
+                    <span>Enhancing contrast (CLAHE)</span>
+                </div>
+                <div class="proc-step" id="proc-step-4">
+                    <span class="proc-step-dot"></span>
+                    <span>Extracting text with AI OCR</span>
+                </div>
+            </div>
+
+            <p class="proc-label">This may take 10 – 30 seconds on first run</p>
+        </div>
+    </div>
+
+
+    <!-- ================= HEADER ================= -->
+    <header class="topbar">
+        <a href="{{ url_for('index') }}" class="brand">
+            <span class="brand-icon">E</span>
+            <span class="brand-text-animated">Edu<span class="brand-accent">Scan</span> <span
+                    style="font-size:15px;font-weight:700;letter-spacing:0;">AI</span></span>
+        </a>
+
+        <div class="header-right">
+            <span class="status-dot"></span>
+            <span class="header-status">AI workspace</span>
+            <span class="version-badge">BETA</span>
+        </div>
+    </header>
+
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <main class="container">
+
+        <section class="hero">
+            <div class="eyebrow">
+                <span class="eyebrow-icon">✦</span>
+                AI-POWERED WHITEBOARD TOOL
+            </div>
+
+            <h1>Turn whiteboard ideas<br>
+                into <span class="gradient-text">editable text.</span>
+            </h1>
+
+            <p class="hero-description">
+                Upload your classroom whiteboard photo — EduScan AI automatically
+                corrects perspective, enhances the image, and extracts text instantly.
+            </p>
+
+            <div class="feature-list">
+                <span><span class="check-icon">✓</span> Auto perspective correction</span>
+                <span><span class="check-icon">✓</span> Image enhancement</span>
+                <span><span class="check-icon">✓</span> AI text extraction</span>
+                <span><span class="check-icon">✓</span> TXT &amp; PDF export</span>
+            </div>
+        </section>
+
+
+        <!-- ================= FLASH MESSAGES ================= -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <section class="flash-container" aria-live="polite">
+            {% for category, message in messages %}
+            <div class="flash-message {{ category }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+        {% endwith %}
+
+
+        <!-- ================= UPLOAD CARD ================= -->
+        <section class="workspace-card">
+
+            <div class="section-heading">
+                <div>
+                    <span class="step-label">STEP 01</span>
+                    <h2>Upload your whiteboard</h2>
+                    <p>Choose a clear image of your classroom notes or diagrams.</p>
+                </div>
+
+                <span class="file-limit">MAX 15 MB</span>
+            </div>
+
+            <form action="{{ url_for('index') }}" method="POST" enctype="multipart/form-data" id="upload-form">
+
+                <label for="image-upload" class="upload-zone" id="upload-zone">
+
+                    <div class="upload-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M5 14v4a2 2 0 002 2h10a2 2 0 002-2v-4" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" />
+                        </svg>
+                    </div>
+
+                    <h3 id="upload-title">Drop your image here</h3>
+                    <p id="upload-description">or click to browse files from your computer</p>
+
+                    <span class="browse-button">Choose image</span>
+
+                    <span class="supported-formats">PNG · JPG · JPEG · WEBP</span>
+
+                    <input type="file" id="image-upload" name="image" accept=".png,.jpg,.jpeg,.webp" required>
+                </label>
+
+                <div id="selected-file" class="selected-file" hidden>
+                    <span class="file-symbol">IMG</span>
+                    <div class="selected-file-info">
+                        <strong id="file-name"></strong>
+                        <span id="file-size"></span>
+                    </div>
+                    <button type="button" id="remove-file" class="remove-button"
+                        aria-label="Remove selected image">&#x2715;</button>
+                </div>
+
+                <div class="upload-actions">
+                    <span class="privacy-note">
+                        <span aria-hidden="true">&#128274;</span>
+                        Processed locally by your EduScan AI server
+                    </span>
+
+                    <button type="submit" class="primary-button" id="process-button">
+                        <span>Process image</span>
+                        <span aria-hidden="true">&#8594;</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+
+        <!-- ================= RESULTS ================= -->
+        {% if original_image %}
+
+        <section class="results-section">
+
+            <div class="results-heading">
+                <div>
+                    <span class="step-label">STEP 02</span>
+                    <h2>Your whiteboard results</h2>
+                    <p>Review the images and edit the extracted text before exporting.</p>
+                </div>
+
+                <span class="result-status">
+                    <span class="status-dot"></span>
+                    Processing complete
+                </span>
+            </div>
+
+            <!-- Auto-perspective status banner -->
+            {% if perspective_applied %}
+            <div class="auto-banner success">
+                <span class="auto-banner-icon">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="10" cy="10" r="9" stroke="#159b72" stroke-width="1.5" fill="#e8f9f2" />
+                        <path d="M6 10.5l2.5 2.5 5.5-6" stroke="#159b72" stroke-width="1.8" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </span>
+                <span>
+                    <strong>Perspective automatically corrected.</strong>
+                    The board boundary was detected and straightened.
+                    The enhanced image and OCR text both use the corrected view.
+                </span>
+            </div>
+            {% else %}
+            <div class="auto-banner info">
+                <span class="auto-banner-icon">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="10" cy="10" r="9" stroke="#5359e8" stroke-width="1.5" fill="#eef0ff" />
+                        <path d="M10 9v5" stroke="#5359e8" stroke-width="1.8" stroke-linecap="round" />
+                        <circle cx="10" cy="6.5" r="1" fill="#5359e8" />
+                    </svg>
+                </span>
+                <span>
+                    <strong>Processed without perspective warp.</strong>
+                    Your whiteboard text has been extracted below using AI OCR.
+                    Manual corner adjustment is optional if you'd like to straighten the board further.
+                </span>
+            </div>
+            {% endif %}
+
+
+            <!-- Side-by-side comparison -->
+            <div class="comparison-grid">
+
+                <!-- LEFT: Original image -->
+                <article class="comp-card">
+                    <div class="comp-card-header">
+                        <div class="comp-card-header-left">
+                            <span class="comp-num">01</span>
+                            <span class="comp-title">Original image</span>
+                        </div>
+                        <span class="comp-badge badge-source">SOURCE</span>
+                    </div>
+
+                    <div class="comp-image-wrap">
+                        <img src="{{ original_image }}" alt="Original uploaded whiteboard">
+                    </div>
+
+                    <div class="comp-footer">
+                        <span class="comp-footer-note">As uploaded</span>
+                        <a href="{{ original_image }}" target="_blank" rel="noopener" class="comp-view-link">View
+                            full</a>
+                    </div>
+                </article>
+
+
+                <!-- RIGHT: Enhanced / perspective-corrected image -->
+                <article class="comp-card">
+                    <div class="comp-card-header">
+                        <div class="comp-card-header-left">
+                            <span class="comp-num">02</span>
+                            <span class="comp-title">
+                                {% if perspective_applied %}
+                                Perspective-corrected &amp; enhanced
+                                {% else %}
+                                Enhanced image
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                            {% if perspective_applied %}
+                            <span class="comp-badge badge-auto">AUTO</span>
+                            {% endif %}
+                            <span class="comp-badge badge-enhanced">ENHANCED</span>
+                        </div>
+                    </div>
+
+                    <div class="comp-image-wrap">
+                        <img src="{{ cleaned_image }}" alt="Perspective-corrected and enhanced whiteboard">
+                    </div>
+
+                    <div class="comp-footer">
+                        <span class="comp-footer-note">
+                            {% if perspective_applied %}
+                            Perspective corrected + CLAHE enhanced
+                            {% else %}
+                            CLAHE contrast enhanced
+                            {% endif %}
+                        </span>
+                        <a href="{{ url_for('output_file', filename=cleaned_image.split('/')[-1]) }}"
+                            download="eduscan_enhanced.png" class="comp-download-link">
+                            Download
+                        </a>
+                    </div>
+                </article>
+
+            </div>
+
+
+            <!-- Manual Perspective Correction (centred collapsible) -->
+            <div class="manual-persp-wrapper">
+
+                <button class="manual-persp-toggle" id="manual-toggle"
+                    aria-expanded="false"
+                    aria-controls="manual-panel">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+                        <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.8" />
+                        <path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    </svg>
+                    <span>
+                        Manual perspective correction
+                        <small style="color:var(--muted);font-weight:600;margin-left:6px;">(Optional)</small>
+                    </span>
+                    <span class="toggle-arrow">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </span>
+                </button>
+
+                <div class="manual-persp-panel" id="manual-panel"
+                    role="region" aria-labelledby="manual-toggle">
+
+                    <p style="margin:0 0 12px;font-size:13px;color:var(--muted);">
+                        Perspective correction is completely optional. If the text is already readable or you don't wish to adjust the corners, you can scroll directly to the extracted text below.
+                    </p>
+                    <p style="margin:0 0 12px;font-size:12px;color:var(--muted);">
+                        To adjust corners manually: click the four corners of your whiteboard in order:
+                        <strong>top-left &rarr; top-right &rarr; bottom-right &rarr; bottom-left</strong>.
+                    </p>
+
+                    <!-- Hidden source image for canvas drawing -->
+                    <img id="perspective-source" src="{{ original_image }}"
+                        alt="Original whiteboard for perspective correction">
+
+                    <!-- Interactive canvas -->
+                    <canvas id="perspective-canvas"></canvas>
+
+                    <p id="perspective-status">Select corner 1 of 4.</p>
+
+                    <form action="/correct-perspective" method="POST">
+                        <input type="hidden" name="file_id" value="{{ file_id }}">
+                        <input type="hidden" id="corners" name="corners" value="[]">
+
+                        <div class="persp-buttons">
+                            <button type="button" id="reset-corners" class="persp-btn">
+                                &#8635; Reset corners
+                            </button>
+                            <button type="submit" id="apply-perspective" class="persp-btn primary" disabled>
+                                Apply Perspective Correction &#8594;
+                            </button>
+                            <a href="#extracted-text-section" class="persp-btn" style="display:inline-flex;align-items:center;text-decoration:none;">
+                                Skip to extracted text &darr;
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+
+
+            <!-- Editable OCR result -->
+            <article class="editor-card" id="extracted-text-section" style="margin-top:28px;">
+
+                <div class="editor-header">
+                    <div>
+                        <span class="step-label">STEP 03</span>
+                        <h2>Extracted text</h2>
+                        <p>Correct recognition errors and format your notes below.</p>
+                    </div>
+
+                    <span class="editable-badge">
+                        <span aria-hidden="true">Edit</span> Editable
+                    </span>
+                </div>
+
+                <form id="export-form" method="POST">
+
+                    <div class="editor-toolbar">
+                        <span>TRANSCRIPTION.TXT</span>
+                        <span id="character-count">0 characters</span>
+                    </div>
+
+                    <textarea id="extracted-text" name="extracted_text"
+                        placeholder="Your extracted text will appear here..." spellcheck="true"
+                        aria-label="Edit extracted whiteboard text">{{ extracted_text }}</textarea>
+
+                    <div class="editor-footer">
+                        <span>Review the text before downloading.</span>
+                        <button type="button" id="copy-button" class="secondary-button">
+                            Copy text
+                        </button>
+                    </div>
+
+                    <div class="export-divider"></div>
+
+                    <div class="export-heading">
+                        <div>
+                            <h3>Export your notes</h3>
+                            <p>Downloads use the text currently in the editor.</p>
+                        </div>
+                    </div>
+
+                    <div class="export-buttons">
+                        <button type="submit" formaction="{{ url_for('download_txt') }}"
+                            class="export-button txt-button">
+                            <span class="export-icon">TXT</span>
+                            <span class="export-label">
+                                <strong>Download TXT</strong>
+                                <small>Plain text file</small>
+                            </span>
+                            <span class="export-arrow-btn" title="Download TXT" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 4v12m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                </svg>
+                            </span>
+                        </button>
+
+                        <button type="submit" formaction="{{ url_for('download_pdf') }}"
+                            class="export-button pdf-button">
+                            <span class="export-icon">PDF</span>
+                            <span class="export-label">
+                                <strong>Download PDF</strong>
+                                <small>Printable document</small>
+                            </span>
+                            <span class="export-arrow-btn" title="Download PDF" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 4v12m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                </svg>
+                            </span>
+                        </button>
+                    </div>
+
+                </form>
+            </article>
+
+        </section>
+        {% endif %}
+
+
+        <!-- ================= FOOTER ================= -->
+        <footer class="footer">
+            <a href="{{ url_for('index') }}" class="footer-brand brand-text-animated">EduScan AI</a>
+            <span class="built-by-pill">✦ Built by Navadeep J</span>
+            <span>Built with Python, Flask, OpenCV &amp; Qwen 2.5-VL</span>
+            <span>AI-assisted transcription &middot; Always review the output</span>
+        </footer>
+
+    </main>
+
+
+    <!-- ================= FRONTEND INTERACTIONS ================= -->
+    <script>
+        // Upload zone
+        const fileInput = document.getElementById("image-upload");
+        const uploadZone = document.getElementById("upload-zone");
+        const selectedFile = document.getElementById("selected-file");
+        const fileName = document.getElementById("file-name");
+        const fileSize = document.getElementById("file-size");
+        const uploadTitle = document.getElementById("upload-title");
+        const uploadDescription = document.getElementById("upload-description");
+        const removeButton = document.getElementById("remove-file");
+        const uploadForm = document.getElementById("upload-form");
+        const processButton = document.getElementById("process-button");
+
+        function displaySelectedFile(file) {
+            if (!file) return;
+            fileName.textContent = file.name;
+            fileSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + " MB";
+            selectedFile.hidden = false;
+            uploadTitle.textContent = "Image selected";
+            uploadDescription.textContent = "Your image is ready to process.";
+        }
+
+        fileInput.addEventListener("change", function () {
+            const file = this.files[0];
+            if (file && file.size > 15 * 1024 * 1024) {
+                alert("Please choose an image smaller than 15 MB.");
+                this.value = "";
+                selectedFile.hidden = true;
+                return;
+            }
+            if (file) displaySelectedFile(file);
+        });
+
+        if (removeButton) {
+            removeButton.addEventListener("click", function () {
+                fileInput.value = "";
+                selectedFile.hidden = true;
+                uploadTitle.textContent = "Drop your image here";
+                uploadDescription.textContent = "or click to browse files from your computer";
+            });
+        }
+
+        ["dragenter", "dragover"].forEach(function (eventName) {
+            uploadZone.addEventListener(eventName, function (event) {
+                event.preventDefault();
+                uploadZone.classList.add("drag-active");
+            });
+        });
+
+        ["dragleave", "drop"].forEach(function (eventName) {
+            uploadZone.addEventListener(eventName, function (event) {
+                event.preventDefault();
+                uploadZone.classList.remove("drag-active");
+            });
+        });
+
+        uploadZone.addEventListener("drop", function (event) {
+            const file = event.dataTransfer.files[0];
+            if (!file) return;
+            const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
+            if (!allowedTypes.includes(file.type)) {
+                alert("Please drop a PNG, JPG, JPEG or WebP image.");
+                return;
+            }
+            if (file.size > 15 * 1024 * 1024) {
+                alert("Please choose an image smaller than 15 MB.");
+                return;
+            }
+            const transfer = new DataTransfer();
+            transfer.items.add(file);
+            fileInput.files = transfer.files;
+            displaySelectedFile(file);
+        });
+
+        uploadForm.addEventListener("submit", function (event) {
+            if (!fileInput.files.length) {
+                event.preventDefault();
+                alert("Please choose an image first.");
+                return;
+            }
+            processButton.disabled = true;
+            processButton.innerHTML = '<span>Processing image…</span><span>&#9203;</span>';
+            showProcessingOverlay();
+        });
+
+        // Also show processing effect when applying manual perspective correction
+        const manualForm = document.querySelector('form[action="/correct-perspective"]');
+        if (manualForm) {
+            manualForm.addEventListener("submit", function () {
+                const applyBtn = document.getElementById("apply-perspective");
+                if (applyBtn) {
+                    applyBtn.disabled = true;
+                    applyBtn.innerHTML = 'Processing… &#9203;';
+                }
+                showProcessingOverlay();
+            });
+        }
+
+        // Character counter
+        const textEditor = document.getElementById("extracted-text");
+        const characterCount = document.getElementById("character-count");
+
+        function updateCharacterCount() {
+            if (!textEditor || !characterCount) return;
+            const count = textEditor.value.length;
+            characterCount.textContent = count + (count === 1 ? " character" : " characters");
+        }
+
+        if (textEditor) {
+            textEditor.addEventListener("input", updateCharacterCount);
+            updateCharacterCount();
+        }
+
+        // Copy button
+        const copyButton = document.getElementById("copy-button");
+        if (copyButton && textEditor) {
+            copyButton.addEventListener("click", async function () {
+                try {
+                    await navigator.clipboard.writeText(textEditor.value);
+                    copyButton.textContent = "Copied!";
+                    setTimeout(() => { copyButton.textContent = "Copy text"; }, 1500);
+                } catch (error) {
+                    textEditor.select();
+                    document.execCommand("copy");
+                    copyButton.textContent = "Copied!";
+                }
+            });
+        }
+
+        // Manual perspective collapsible toggle
+        const manualToggle = document.getElementById("manual-toggle");
+        const manualPanel = document.getElementById("manual-panel");
+
+        if (manualToggle && manualPanel) {
+            manualToggle.addEventListener("click", () => {
+                const expanded = manualToggle.getAttribute("aria-expanded") === "true";
+                manualToggle.setAttribute("aria-expanded", String(!expanded));
+                manualPanel.classList.toggle("open", !expanded);
+            });
+        }
+
+        // ── Processing overlay with step animation ───────────────────────
+        function showProcessingOverlay() {
+            const overlay = document.getElementById("processing-overlay");
+            if (!overlay) return;
+            overlay.classList.add("visible");
+
+            const steps = overlay.querySelectorAll(".proc-step");
+            // Approximate server-side timings (ms) for each step label
+            const delays = [0, 800, 1600, 2800, 4200];
+
+            steps.forEach((step, i) => {
+                // Mark previous steps done and current step active
+                setTimeout(() => {
+                    steps.forEach((s, j) => {
+                        s.classList.remove("active", "done");
+                        if (j < i) s.classList.add("done");
+                        if (j === i) s.classList.add("active");
+                    });
+                }, delays[i]);
+            });
+        }
+
+        // Hide overlay immediately if user presses back button (page cached)
+        window.addEventListener("pageshow", function (e) {
+            if (e.persisted) {
+                const overlay = document.getElementById("processing-overlay");
+                if (overlay) overlay.classList.remove("visible");
+                if (processButton) {
+                    processButton.disabled = false;
+                    processButton.innerHTML = '<span>Process image</span><span>&#8594;</span>';
+                }
+            }
+        });
+    </script>
+
+    <script src="{{ url_for('static', filename='perspective.js') }}"></script>
+
+</body>
+
+</html>
