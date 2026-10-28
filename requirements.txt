@@ -1,7 +1,9 @@
-flask
-opencv-python
-numpy
-paddleocr
-reportlab
-openai
-python-dotenv
+Flask==3.0.3
+gunicorn==22.0.0
+opencv-python==4.10.0.84
+numpy==2.0.0
+paddleocr==2.8.1
+reportlab==4.2.2
+openai==1.44.1
+python-dotenv==1.0.1
+Werkzeug==3.0.3

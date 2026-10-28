@@ -628,36 +628,47 @@
         <div class="proc-card">
             <div class="proc-scan-beam"></div>
 
+
             <div class="proc-spinner"></div>
 
+
             <div class="proc-title">Analysing your whiteboard…</div>
+
 
             <div class="proc-steps">
                 <div class="proc-step active" id="proc-step-0">
                     <span class="proc-step-dot"></span>
                     <span>Saving &amp; validating image</span>
                 </div>
+
                 <div class="proc-step" id="proc-step-1">
                     <span class="proc-step-dot"></span>
                     <span>Auto-detecting board boundary</span>
                 </div>
+
                 <div class="proc-step" id="proc-step-2">
                     <span class="proc-step-dot"></span>
                     <span>Correcting perspective</span>
                 </div>
+
                 <div class="proc-step" id="proc-step-3">
                     <span class="proc-step-dot"></span>
                     <span>Enhancing contrast (CLAHE)</span>
                 </div>
+
                 <div class="proc-step" id="proc-step-4">
                     <span class="proc-step-dot"></span>
                     <span>Extracting text with AI OCR</span>
                 </div>
+
             </div>
+
 
             <p class="proc-label">This may take 10 – 30 seconds on first run</p>
         </div>
+
     </div>
+
 
 
     <!-- ================= HEADER ================= -->
@@ -673,6 +684,7 @@
             <span class="header-status">AI workspace</span>
             <span class="version-badge">BETA</span>
         </div>
+
     </header>
 
 
@@ -685,6 +697,7 @@
                 AI-POWERED WHITEBOARD TOOL
             </div>
 
+
             <h1>Turn whiteboard ideas<br>
                 into <span class="gradient-text">editable text.</span>
             </h1>
@@ -693,6 +706,8 @@
                 Upload your classroom whiteboard photo — EduScan AI automatically
                 corrects perspective, enhances the image, and extracts text instantly.
             </p>
+            <p class="spec-line">OCR: Qwen 2.5 VL (cloud) • PaddleOCR v6 (local) • Built with Flask, OpenCV, ReportLab.
+            </p>
 
             <div class="feature-list">
                 <span><span class="check-icon">✓</span> Auto perspective correction</span>
@@ -700,6 +715,7 @@
                 <span><span class="check-icon">✓</span> AI text extraction</span>
                 <span><span class="check-icon">✓</span> TXT &amp; PDF export</span>
             </div>
+
         </section>
 
 
@@ -711,6 +727,7 @@
             <div class="flash-message {{ category }}">
                 {{ message }}
             </div>
+
             {% endfor %}
         </section>
         {% endif %}
@@ -727,8 +744,10 @@
                     <p>Choose a clear image of your classroom notes or diagrams.</p>
                 </div>
 
+
                 <span class="file-limit">MAX 15 MB</span>
             </div>
+
 
             <form action="{{ url_for('index') }}" method="POST" enctype="multipart/form-data" id="upload-form">
 
@@ -742,6 +761,7 @@
                                 stroke-linecap="round" />
                         </svg>
                     </div>
+
 
                     <h3 id="upload-title">Drop your image here</h3>
                     <p id="upload-description">or click to browse files from your computer</p>
@@ -759,9 +779,11 @@
                         <strong id="file-name"></strong>
                         <span id="file-size"></span>
                     </div>
+
                     <button type="button" id="remove-file" class="remove-button"
                         aria-label="Remove selected image">&#x2715;</button>
                 </div>
+
 
                 <div class="upload-actions">
                     <span class="privacy-note">
@@ -774,6 +796,7 @@
                         <span aria-hidden="true">&#8594;</span>
                     </button>
                 </div>
+
             </form>
         </section>
 
@@ -790,11 +813,13 @@
                     <p>Review the images and edit the extracted text before exporting.</p>
                 </div>
 
+
                 <span class="result-status">
                     <span class="status-dot"></span>
                     Processing complete
                 </span>
             </div>
+
 
             <!-- Auto-perspective status banner -->
             {% if perspective_applied %}
@@ -812,6 +837,7 @@
                     The enhanced image and OCR text both use the corrected view.
                 </span>
             </div>
+
             {% else %}
             <div class="auto-banner info">
                 <span class="auto-banner-icon">
@@ -827,6 +853,7 @@
                     Manual corner adjustment is optional if you'd like to straighten the board further.
                 </span>
             </div>
+
             {% endif %}
 
 
@@ -840,18 +867,22 @@
                             <span class="comp-num">01</span>
                             <span class="comp-title">Original image</span>
                         </div>
+
                         <span class="comp-badge badge-source">SOURCE</span>
                     </div>
+
 
                     <div class="comp-image-wrap">
                         <img src="{{ original_image }}" alt="Original uploaded whiteboard">
                     </div>
+
 
                     <div class="comp-footer">
                         <span class="comp-footer-note">As uploaded</span>
                         <a href="{{ original_image }}" target="_blank" rel="noopener" class="comp-view-link">View
                             full</a>
                     </div>
+
                 </article>
 
 
@@ -868,17 +899,21 @@
                                 {% endif %}
                             </span>
                         </div>
+
                         <div style="display:flex;gap:6px;flex-wrap:wrap;">
                             {% if perspective_applied %}
                             <span class="comp-badge badge-auto">AUTO</span>
                             {% endif %}
                             <span class="comp-badge badge-enhanced">ENHANCED</span>
                         </div>
+
                     </div>
+
 
                     <div class="comp-image-wrap">
                         <img src="{{ cleaned_image }}" alt="Perspective-corrected and enhanced whiteboard">
                     </div>
+
 
                     <div class="comp-footer">
                         <span class="comp-footer-note">
@@ -893,16 +928,17 @@
                             Download
                         </a>
                     </div>
+
                 </article>
 
             </div>
 
 
+
             <!-- Manual Perspective Correction (centred collapsible) -->
             <div class="manual-persp-wrapper">
 
-                <button class="manual-persp-toggle" id="manual-toggle"
-                    aria-expanded="false"
+                <button class="manual-persp-toggle" id="manual-toggle" aria-expanded="false"
                     aria-controls="manual-panel">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
                         <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.8" />
@@ -920,16 +956,20 @@
                     </span>
                 </button>
 
-                <div class="manual-persp-panel" id="manual-panel"
-                    role="region" aria-labelledby="manual-toggle">
+                <div class="manual-persp-panel" id="manual-panel" role="region" aria-labelledby="manual-toggle">
 
                     <p style="margin:0 0 12px;font-size:13px;color:var(--muted);">
-                        Perspective correction is completely optional. If the text is already readable or you don't wish to adjust the corners, you can scroll directly to the extracted text below.
+                        Perspective correction is completely optional. If the text is already readable or you don't wish
+                        to adjust the corners, you can scroll directly to the extracted text below.
                     </p>
+                    <p class="spec-line">OCR: Qwen 2.5 VL (cloud) • PaddleOCR v6 (local) • Built with Flask, OpenCV,
+                        ReportLab.</p>
                     <p style="margin:0 0 12px;font-size:12px;color:var(--muted);">
                         To adjust corners manually: click the four corners of your whiteboard in order:
                         <strong>top-left &rarr; top-right &rarr; bottom-right &rarr; bottom-left</strong>.
                     </p>
+                    <p class="spec-line">OCR: Qwen 2.5 VL (cloud) • PaddleOCR v6 (local) • Built with Flask, OpenCV,
+                        ReportLab.</p>
 
                     <!-- Hidden source image for canvas drawing -->
                     <img id="perspective-source" src="{{ original_image }}"
@@ -951,14 +991,18 @@
                             <button type="submit" id="apply-perspective" class="persp-btn primary" disabled>
                                 Apply Perspective Correction &#8594;
                             </button>
-                            <a href="#extracted-text-section" class="persp-btn" style="display:inline-flex;align-items:center;text-decoration:none;">
+                            <a href="#extracted-text-section" class="persp-btn"
+                                style="display:inline-flex;align-items:center;text-decoration:none;">
                                 Skip to extracted text &darr;
                             </a>
                         </div>
+
                     </form>
                 </div>
 
+
             </div>
+
 
 
             <!-- Editable OCR result -->
@@ -971,10 +1015,12 @@
                         <p>Correct recognition errors and format your notes below.</p>
                     </div>
 
+
                     <span class="editable-badge">
                         <span aria-hidden="true">Edit</span> Editable
                     </span>
                 </div>
+
 
                 <form id="export-form" method="POST">
 
@@ -982,6 +1028,7 @@
                         <span>TRANSCRIPTION.TXT</span>
                         <span id="character-count">0 characters</span>
                     </div>
+
 
                     <textarea id="extracted-text" name="extracted_text"
                         placeholder="Your extracted text will appear here..." spellcheck="true"
@@ -994,14 +1041,18 @@
                         </button>
                     </div>
 
+
                     <div class="export-divider"></div>
+
 
                     <div class="export-heading">
                         <div>
                             <h3>Export your notes</h3>
                             <p>Downloads use the text currently in the editor.</p>
                         </div>
+
                     </div>
+
 
                     <div class="export-buttons">
                         <button type="submit" formaction="{{ url_for('download_txt') }}"
@@ -1037,6 +1088,7 @@
                         </button>
                     </div>
 
+
                 </form>
             </article>
 
@@ -1048,7 +1100,6 @@
         <footer class="footer">
             <a href="{{ url_for('index') }}" class="footer-brand brand-text-animated">EduScan AI</a>
             <span class="built-by-pill">✦ Built by Navadeep J</span>
-            <span>Built with Python, Flask, OpenCV &amp; Qwen 2.5-VL</span>
             <span>AI-assisted transcription &middot; Always review the output</span>
         </footer>
 

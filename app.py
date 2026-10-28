@@ -1,11 +1,10 @@
-
 """
 EduScan — AI-Powered Whiteboard Cleaner & Text Extractor
 
 Flask backend:
 1. Accepts a whiteboard image upload.
 2. Creates an enhanced image for download.
-3. Extracts text using PaddleOCR Small.
+3. Extracts text using PaddleOCR Small or qwen 2.5 VL model
 4. Allows users to edit extracted text.
 5. Exports the edited text as TXT or PDF.
 """
@@ -15,6 +14,7 @@ from uuid import uuid4
 from xml.sax.saxutils import escape
 
 import base64
+import secrets
 import mimetypes
 import os
 import cv2
@@ -48,7 +48,7 @@ app = Flask(__name__)
 
 # Secret key is used for Flask session messages.
 # Replace this with an environment variable before deployment.
-app.secret_key = "replace-this-with-a-random-secret-key"
+app.secret_key = os.getenv("FLASK_SECRET") or "dev-fallback-secret"
 
 # Store uploaded images and generated files inside this folder.
 BASE_DIR = Path(__file__).resolve().parent
